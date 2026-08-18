@@ -1,0 +1,19 @@
+{
+  "name": "regroup",
+  "owner": {
+    "name": "Seyon Vasantharajan",
+    "url": "https://github.com/seyonv"
+  },
+  "metadata": {
+    "description": "Pick up where you left off: every branch, worktree and open Claude session in one canvas.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "regroup",
+      "source": "./",
+      "description": "Rebuild lost context across branches, worktrees and open Claude Code sessions. Shows the prompt that started each one, the decisions and tasks under it, whether it reached main, and the command to resume or close it. Read-only, no dependencies.",
+      "category": "productivity"
+    }
+  ]
+}

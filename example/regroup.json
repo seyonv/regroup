@@ -1,0 +1,916 @@
+{
+ "repo": "delightful_note_experience",
+ "title": "Grove Regroup",
+ "generated": "2026-08-18",
+ "headline": {
+  "verdict": "Push main. Commit nothing that is currently dirty.",
+  "reassurance": "No Swift source file is uncommitted anywhere \u2014 not in the root checkout, not in any of the four other worktrees. Every line of app code you have written is committed.",
+  "stats": [
+   {
+    "n": "58",
+    "label": "commits on main, none pushed",
+    "tone": "amber"
+   },
+   {
+    "n": "0",
+    "label": "dirty .swift files, all worktrees",
+    "tone": "moss"
+   },
+   {
+    "n": "1",
+    "label": "branch with unmerged real work",
+    "tone": "amber"
+   },
+   {
+    "n": "6",
+    "label": "Claude sessions open (one closed itself today)",
+    "tone": "violet"
+   },
+   {
+    "n": "5",
+    "label": "worktrees, 3 finished with",
+    "tone": "ink"
+   },
+   {
+    "n": "19",
+    "label": "branches already merged",
+    "tone": "moss"
+   }
+  ],
+  "greeting": "Let's pick up where you left off.",
+  "intro": "Six Claude Code sessions, five worktrees and 21 branches in this repo, read back into one picture: what each one was asked to do, what it decided, how far it got, and whether any of it reached main.",
+  "asof": "Tuesday Aug 18, 16:18"
+ },
+ "actions": [
+  {
+   "rank": "Do now",
+   "tone": "amber",
+   "title": "Push main to origin",
+   "why": "58 commits sit only on this Mac \u2014 the Vouched Scribe, the poster tier, the ground law, every merge since 08-08. One disk failure loses ten days.",
+   "cmd": "git push origin main"
+  },
+  {
+   "rank": "Do now",
+   "tone": "rose",
+   "title": "Throw away the vendored-asset edits",
+   "why": "katex.min.css/js and mermaid.min.js are reformatted third-party bundles \u2014 the docgarden formatter hook ran over them. Content differs from HEAD even ignoring whitespace, so this is damage, not noise. Never commit it.",
+   "cmd": "git checkout -- Grove/Resources/preview/"
+  },
+  {
+   "rank": "Do now",
+   "tone": "rose",
+   "title": "Ignore the 486 MB log archive",
+   "why": "system_logs.logarchive (486 MB) and shots-ios (8.6 MB) are untracked and unignored \u2014 one `git add -A` puts them in history permanently.",
+   "cmd": "printf '%s\\n' system_logs.logarchive/ shots-ios/ .claude/settings.local.json >> .gitignore"
+  },
+  {
+   "rank": "Worth doing",
+   "tone": "ink",
+   "title": "Commit the real config, on purpose",
+   "why": ".githooks/, .github/, .docgarden.toml and .docgarden/ are small, intentional, and belong in the repo. Add them by name \u2014 never with -A.",
+   "cmd": "git add .githooks .github .docgarden.toml .docgarden"
+  },
+  {
+   "rank": "Worth doing",
+   "tone": "moss",
+   "title": "Retire three finished worktrees",
+   "why": "grove-suggest, grove-sync-on-the-mac and conductor/accra all sit on branches fully merged into main. Their only uncommitted content is regenerated artefacts.",
+   "cmd": "git worktree remove ../grove-suggest && git worktree remove ../grove-sync-on-the-mac"
+  },
+  {
+   "rank": "Decide",
+   "tone": "violet",
+   "title": "Close six idle terminal sessions",
+   "why": "Six Claude sessions in the root checkout have been open 2\u20137 days with no activity since 08-18 14:57. They share one working tree, which is how a formatter hook reaches files nobody is editing.",
+   "cmd": null
+  },
+  {
+   "rank": "Decide",
+   "tone": "amber",
+   "title": "Land or park the honesty layer",
+   "why": "The only branch holding unmerged work. Its loop has run 1d 16h against a bar it has not yet been shown to clear.",
+   "cmd": null
+  }
+ ],
+ "trunk": {
+  "label": "main",
+  "head": "910f880",
+  "unpushed": 58,
+  "upstream": "origin/main",
+  "nodes": [
+   {
+    "date": "08-09",
+    "sha": "aeb15a8",
+    "title": "Sidebar refinement + one way to finish",
+    "note": "the sidebar stops borrowing someone else's blue"
+   },
+   {
+    "date": "08-11",
+    "sha": "aa94ad0",
+    "title": "Enhanced markdown",
+    "note": ""
+   },
+   {
+    "date": "08-12",
+    "sha": "58d0966",
+    "title": "Editor point of intent",
+    "note": "selection toolbar, Grove-voiced right-click, one Escape chain"
+   },
+   {
+    "date": "08-16",
+    "sha": "cb16a79",
+    "title": "Quiet syntax",
+    "note": "markers never render, em-based rhythm, caret transparency"
+   },
+   {
+    "date": "08-16",
+    "sha": "13ff446",
+    "title": "The Vouched Scribe",
+    "note": "lit, cited offers the editor answers with Tab"
+   },
+   {
+    "date": "08-16",
+    "sha": "770b849",
+    "title": "Poster tier, phase 1",
+    "note": "format, validator, Field Notes pack, renderer, store"
+   },
+   {
+    "date": "08-16",
+    "sha": "c633b0f",
+    "title": "Suggest ground law",
+    "note": "the ghost stands only on empty ground, and waits for writing"
+   },
+   {
+    "date": "08-16",
+    "sha": "910f880",
+    "title": "HEAD \u2014 look before you call it done",
+    "note": "",
+    "head": true
+   }
+  ]
+ },
+ "workstreams": [
+  {
+   "id": "friction",
+   "title": "Less friction in verification",
+   "branch": "less-friction-verification",
+   "worktree": null,
+   "session": null,
+   "ask": "Notice when a lane dies and stop paying for waiting; let the test host boot without taking the screen, and sign builds so macOS asks once.",
+   "dirty": null,
+   "verdict": "Unmerged since 07-30 \u2014 nineteen days. No worktree, no session. Both commits touch the drive rig, which has been rebuilt around it twice since.",
+   "next": "Read the two commits. Cherry-pick what still applies, or delete the branch. Do not merge it whole.",
+   "anchor": null,
+   "zone": "open",
+   "gcol": 1,
+   "span": 2,
+   "landing": {
+    "state": "unmerged",
+    "label": "Not in main",
+    "detail": "2 commits waiting since 07-30"
+   },
+   "session_state": {
+    "state": "none",
+    "label": "No session open",
+    "detail": "nothing running"
+   },
+   "act": {
+    "label": "Read the two commits before deciding",
+    "cmd": "git log -p main..less-friction-verification"
+   },
+   "tree": {
+    "decisions": [
+     "Stop paying for a lane that has already died"
+    ],
+    "tasks": [
+     {
+      "state": "done",
+      "text": "Notice when a lane dies, and stop waiting on it",
+      "ref": "e0384e0",
+      "subs": [],
+      "date": "Jul 30, 23:11"
+     },
+     {
+      "state": "done",
+      "text": "Boot the test host without taking the screen",
+      "ref": "3dc3d81",
+      "subs": [
+       {
+        "state": "done",
+        "text": "sign builds so macOS asks once"
+       }
+      ],
+      "date": "Jul 30, 16:46"
+     },
+     {
+      "state": "open",
+      "text": "Decide whether either still applies",
+      "subs": [
+       {
+        "state": "open",
+        "text": "the drive rig has been rebuilt around it twice since 07-30"
+       }
+      ]
+     }
+    ]
+   },
+   "when": {
+    "opened": "Jul 30, 16:46",
+    "last": "Jul 30, 23:11",
+    "ago": "19d ago",
+    "span": "6h"
+   }
+  },
+  {
+   "id": "infographic",
+   "title": "Infographic generation, from note or source",
+   "branch": "editor-quiet-syntax (at session start)",
+   "worktree": "root checkout",
+   "session": {
+    "pid": 74044,
+    "uptime": "5d 0h",
+    "model": "",
+    "last_active": "08-18 14:57",
+    "turns": 4,
+    "mode": "interactive"
+   },
+   "ask": "Mock up and plan the ideal interaction to GENERATE an infographic \u2014 when the note is missing information, is the source the better input? Support selecting many notes/sources, or a whole grove, and multiple styles.",
+   "dirty": null,
+   "verdict": "Design conversation, no branch. Its output became the poster tier that shipped \u2014 this session is the upstream of a merge that already landed.",
+   "next": "Nothing to commit. Harvest any decision still only in the transcript into docs/, then close the tab.",
+   "anchor": 5,
+   "zone": "open",
+   "gcol": 3,
+   "span": 2,
+   "landing": {
+    "state": "none",
+    "label": "No branch",
+    "detail": "nothing to merge \u2014 its outcome shipped as the poster tier"
+   },
+   "session_state": {
+    "state": "idle",
+    "label": "Session idle",
+    "detail": "pid 74044 \u00b7 open 5d 1h \u00b7 last spoke 20m ago"
+   },
+   "resume": "claude --resume 5a26c5bd-d6a2-44bc-b589-e287d290f9e8",
+   "act": {
+    "label": "Reopen, harvest, close",
+    "cmd": "claude --resume 5a26c5bd-d6a2-44bc-b589-e287d290f9e8"
+   },
+   "tree": {
+    "decisions": [
+     "Styles ship as packs \u2014 Field Notes was the first one"
+    ],
+    "tasks": [
+     {
+      "state": "open",
+      "text": "Decide the generation input: note, source, or both",
+      "subs": [
+       {
+        "state": "open",
+        "text": "when the note is missing information, is the source the better input?"
+       }
+      ]
+     },
+     {
+      "state": "open",
+      "text": "Multi-select: several notes, several sources, a whole grove",
+      "subs": []
+     },
+     {
+      "state": "done",
+      "text": "Multiple styles",
+      "subs": [
+       {
+        "state": "done",
+        "text": "the poster tier's Field Notes pack landed on main 08-16"
+       }
+      ]
+     }
+    ]
+   },
+   "when": {
+    "opened": "Aug 13, 14:41",
+    "last": "Aug 18, 15:57",
+    "ago": "20m ago",
+    "span": "5d 1h"
+   }
+  },
+  {
+   "id": "nextstep",
+   "title": "What to build next",
+   "branch": "main",
+   "worktree": "root checkout",
+   "session": {
+    "pid": 46696,
+    "uptime": "2d 2h",
+    "model": "",
+    "last_active": "08-18 14:56",
+    "turns": 4,
+    "mode": "interactive"
+   },
+   "ask": "Based on what was recently shipped, is there a next best step that would massively elevate the product and product experience?",
+   "dirty": null,
+   "verdict": "Strategy conversation. Produces direction, never code.",
+   "next": "If it named a direction you believe, write it into STATUS.md \u00a73. Otherwise close the tab.",
+   "anchor": 7,
+   "zone": "open",
+   "gcol": 5,
+   "span": 2,
+   "landing": {
+    "state": "none",
+    "label": "No branch",
+    "detail": "nothing to merge \u2014 a strategy conversation"
+   },
+   "session_state": {
+    "state": "idle",
+    "label": "Session idle",
+    "detail": "pid 46696 \u00b7 open 2d 2h \u00b7 last spoke 21m ago"
+   },
+   "resume": "claude --resume 19a00803-4775-42c4-b421-e128bd0bc73e",
+   "act": {
+    "label": "Reopen, harvest, close",
+    "cmd": "claude --resume 19a00803-4775-42c4-b421-e128bd0bc73e"
+   },
+   "tree": {
+    "decisions": [],
+    "tasks": [
+     {
+      "state": "open",
+      "text": "Name one direction worth building next",
+      "subs": [
+       {
+        "state": "open",
+        "text": "if you believe it, write it into STATUS.md \u00a73"
+       }
+      ]
+     }
+    ]
+   },
+   "when": {
+    "opened": "Aug 16, 13:24",
+    "last": "Aug 18, 15:56",
+    "ago": "21m ago",
+    "span": "2d 2h"
+   }
+  },
+  {
+   "id": "honesty",
+   "title": "The honesty layer",
+   "branch": "worktree-suggest-honesty",
+   "worktree": ".claude/worktrees/suggest-honesty",
+   "locked": true,
+   "session": {
+    "pid": 93606,
+    "uptime": "1d 16h",
+    "model": "opus",
+    "last_active": "08-18 14:51",
+    "turns": 1,
+    "mode": "/loop until it wins"
+   },
+   "ask": "As you write about a source, Grove marks in amber where you drifted from it with the paper's words underneath, offers the verbatim cited sentence that backs a claim, and asks a short margin question about the gap. It never generates prose, never edits, and says \"nothing backs this\" exactly once.",
+   "dirty": {
+    "count": 25,
+    "note": "no .swift \u2014 benchmark predictions, docs reflow, vendored assets"
+   },
+   "verdict": "The one thing that actually needs a decision. Four real commits, none on main.",
+   "next": "Ask the session for its blind numbers. If it cleared NotebookLM, drive the amber marking, look at it, merge. If it did not, park the branch \u2014 it keeps.",
+   "anchor": null,
+   "zone": "open",
+   "gcol": 7,
+   "span": 2,
+   "landing": {
+    "state": "unmerged",
+    "label": "Not in main",
+    "detail": "4 commits waiting \u2014 the only unmerged work in the repo"
+   },
+   "session_state": {
+    "state": "live",
+    "label": "Session running",
+    "detail": "pid 93606 \u00b7 opus \u00b7 open 1d 17h \u00b7 last spoke 27m ago"
+   },
+   "resume": "claude --resume ca370e83-8aec-405b-89c0-c5bcab554c5a",
+   "act": {
+    "label": "Ask it for the blind numbers",
+    "cmd": "claude --resume ca370e83-8aec-405b-89c0-c5bcab554c5a"
+   },
+   "tree": {
+    "decisions": [
+     "Build on the Vouched Scribe's seams \u2014 reuse its paragraph collector and citation anchors rather than lay parallel plumbing",
+     "Judge the layer on precision, not on how much it flags",
+     "One ghost at a time \u2014 the margin question points instead of stacking"
+    ],
+    "tasks": [
+     {
+      "state": "done",
+      "text": "A planted corpus, authored blind",
+      "ref": "2cd2da3",
+      "subs": [
+       {
+        "state": "done",
+        "text": "50 planted drifts and unsupported claims"
+       },
+       {
+        "state": "done",
+        "text": "written before the detector existed, so it cannot teach to the test"
+       }
+      ],
+      "date": "Aug 16, 23:06"
+     },
+     {
+      "state": "done",
+      "text": "Judge on precision, not on flagging",
+      "ref": "b2b3c35",
+      "subs": [
+       {
+        "state": "done",
+        "text": "catch rate and false alarms both reported"
+       }
+      ],
+      "date": "Aug 16, 23:23"
+     },
+     {
+      "state": "done",
+      "text": "Drift marked in amber, with the paper's own words underneath",
+      "ref": "b24c75b",
+      "subs": [
+       {
+        "state": "done",
+        "text": "reuses WebPane.lightParagraph"
+       },
+       {
+        "state": "done",
+        "text": "citation anchors travel into the .md"
+       }
+      ],
+      "date": "Aug 17, 13:12"
+     },
+     {
+      "state": "done",
+      "text": "The one-ghost law; the margin question learns to point",
+      "ref": "e432b97",
+      "subs": [],
+      "date": "Aug 17, 14:18"
+     },
+     {
+      "state": "unknown",
+      "text": "Beat NotebookLM's catch rate, measured blind",
+      "subs": [
+       {
+        "state": "done",
+        "text": "two rounds of predictions run"
+       },
+       {
+        "state": "unknown",
+        "text": "no round has been reported as won"
+       }
+      ]
+     },
+     {
+      "state": "unknown",
+      "text": "Drive the real Grove and read the screenshot",
+      "subs": [
+       {
+        "state": "unknown",
+        "text": "the amber marking and the margin question are visual surfaces"
+       }
+      ]
+     },
+     {
+      "state": "unknown",
+      "text": "sh scripts/lane-test.sh stays green",
+      "subs": []
+     }
+    ]
+   },
+   "when": {
+    "opened": "Aug 16, 22:46",
+    "last": "Aug 18, 15:51",
+    "ago": "27m ago",
+    "span": "1d 17h"
+   }
+  },
+  {
+   "id": "calm",
+   "title": "Make the markdown editor feel calm",
+   "branch": "main",
+   "worktree": "root checkout",
+   "session": {
+    "pid": 36149,
+    "uptime": "6d 18h",
+    "model": "",
+    "last_active": "08-12 11:43",
+    "turns": 5,
+    "mode": "interactive"
+   },
+   "ask": "Improve the existing markdown editor so it feels calm, capable and cohesive. Start by inspecting the current code.",
+   "criteria": [
+    {
+     "text": "A calmer editor",
+     "state": "done",
+     "note": "quiet syntax merged 08-16 as cb16a79 \u2014 markers never render, em-based rhythm"
+    }
+   ],
+   "commits": [],
+   "dirty": null,
+   "verdict": "Oldest open session \u2014 six days, silent since 08-12. Its goal was met by a later branch it never knew about.",
+   "next": "Already closed itself. Nothing to do.",
+   "anchor": 3,
+   "zone": "chip",
+   "gcol": 4,
+   "span": 1,
+   "landing": {
+    "state": "merged",
+    "label": "Goal met in main",
+    "detail": "cb16a79 \u00b7 08-16"
+   },
+   "session_state": {
+    "state": "closed",
+    "label": "session closed",
+    "detail": "pid 36149 exited 08-18, mid-regroup"
+   },
+   "when": {
+    "opened": "Aug 11, 21:11",
+    "last": "Aug 12, 11:43",
+    "ago": "6d ago",
+    "span": "6d 18h"
+   }
+  },
+  {
+   "id": "shipped-suggest",
+   "title": "Suggest: ten drawings to a shipped feature",
+   "branch": "editor-quiet-syntax (at session start)",
+   "worktree": "root checkout",
+   "session": {
+    "pid": 89133,
+    "uptime": "2d 13h",
+    "model": "",
+    "last_active": "08-18 14:57",
+    "turns": 1,
+    "mode": "launch prompt"
+   },
+   "ask": "Take Grove's suggest system from ten drawings to a shipped feature. The bar is Cursor's Tab, installed on this Mac \u2014 live inside it first and write a bar dossier every builder and critic reads.",
+   "criteria": [
+    {
+     "text": "A bar dossier from real use of Cursor Tab",
+     "state": "done",
+     "note": "docs/2026-08-16-tab-bar-dossier.md"
+    },
+    {
+     "text": "Two or three fully assembled product designs",
+     "state": "done",
+     "note": "docs/mockups/2026-08-16-suggest-designs/design-a|b|c.html"
+    },
+    {
+     "text": "Ship it",
+     "state": "done",
+     "note": "merged 08-16 as 13ff446 and 6a16c15 \u2014 the Vouched Scribe"
+    }
+   ],
+   "commits": [],
+   "dirty": null,
+   "verdict": "Complete and merged. Both blind bars won; this is the ancestor of the honesty layer still running.",
+   "next": "Close the tab.",
+   "anchor": 4,
+   "zone": "chip",
+   "gcol": 5,
+   "span": 1,
+   "landing": {
+    "state": "merged",
+    "label": "Merged",
+    "detail": "13ff446 \u00b7 08-16"
+   },
+   "session_state": {
+    "state": "idle",
+    "label": "idle 2d",
+    "detail": "pid 89133 \u00b7 open 2d 14h \u00b7 last spoke 21m ago"
+   },
+   "resume": "claude --resume 94cf0ce9-fc88-43a8-a0e7-00b14645cda6",
+   "when": {
+    "opened": "Aug 16, 01:40",
+    "last": "Aug 18, 15:57",
+    "ago": "21m ago",
+    "span": "2d 14h"
+   }
+  },
+  {
+   "id": "ghostbug",
+   "title": "The ghost overlapped the text",
+   "branch": "main",
+   "worktree": "root checkout",
+   "session": {
+    "pid": 50631,
+    "uptime": "2d 2h",
+    "model": "",
+    "last_active": "08-18 14:56",
+    "turns": 4,
+    "mode": "interactive"
+   },
+   "ask": "Auto-suggest overlays and takes over the space of actual text instead of sitting on a new line. Should auto-suggest even fire when you go back to review a note? And separately, the text is not aligned to the bullet points at all.",
+   "criteria": [
+    {
+     "text": "The ghost stops overlapping real text",
+     "state": "done",
+     "note": "merged as c633b0f, 08-16"
+    },
+    {
+     "text": "Suggest waits for writing rather than firing on review",
+     "state": "done",
+     "note": "same merge"
+    },
+    {
+     "text": "Bullets sit on the baseline",
+     "state": "done",
+     "note": "same merge"
+    }
+   ],
+   "commits": [],
+   "dirty": null,
+   "verdict": "Already landed. This complaint is the direct cause of the suggest-ground-law merge and of the CLAUDE.md rule at HEAD.",
+   "next": "Done. Close the tab.",
+   "anchor": 6,
+   "zone": "chip",
+   "gcol": 7,
+   "span": 1,
+   "landing": {
+    "state": "merged",
+    "label": "Fixed in main",
+    "detail": "c633b0f \u00b7 08-16"
+   },
+   "session_state": {
+    "state": "idle",
+    "label": "idle 2d",
+    "detail": "pid 50631 \u00b7 open 2d 2h \u00b7 last spoke 21m ago"
+   },
+   "resume": "claude --resume 5cbd227f-2604-4574-94c4-9f6b94aad1ee",
+   "when": {
+    "opened": "Aug 16, 13:26",
+    "last": "Aug 18, 15:56",
+    "ago": "21m ago",
+    "span": "2d 2h"
+   }
+  },
+  {
+   "id": "wt-sync",
+   "title": "grove-sync-on-the-mac",
+   "branch": "sync-on-the-mac",
+   "worktree": "../grove-sync-on-the-mac",
+   "session": null,
+   "ask": null,
+   "criteria": [],
+   "commits": [],
+   "dirty": {
+    "count": 11,
+    "note": "no .swift \u2014 todo.html, STATUS.md, tasktrace output and the same reformatted vendored bundles"
+   },
+   "verdict": "Branch merged 08-05. The eleven dirty files are regenerated artefacts and formatter churn, nothing authored.",
+   "next": "git worktree remove --force ../grove-sync-on-the-mac",
+   "anchor": 0,
+   "zone": "retired",
+   "gcol": 1,
+   "span": 2,
+   "landing": {
+    "state": "merged",
+    "label": "In main",
+    "detail": "branch merged 08-05"
+   },
+   "session_state": {
+    "state": "none",
+    "label": "No session",
+    "detail": ""
+   },
+   "act": {
+    "label": "Retire the worktree",
+    "cmd": "git worktree remove --force ../grove-sync-on-the-mac"
+   },
+   "when": {
+    "opened": "Aug 5",
+    "last": "Aug 5",
+    "ago": "13d ago",
+    "span": ""
+   }
+  },
+  {
+   "id": "wt-accra",
+   "title": "conductor / accra",
+   "branch": "seyonv/accra",
+   "worktree": "~/conductor/workspaces/.../accra",
+   "session": null,
+   "ask": null,
+   "criteria": [],
+   "commits": [],
+   "dirty": {
+    "count": 0,
+    "note": "clean"
+   },
+   "verdict": "Merged, clean, untouched since 08-11. A Conductor workspace nobody returned to.",
+   "next": "Remove the workspace.",
+   "anchor": 1,
+   "zone": "retired",
+   "gcol": 3,
+   "span": 2,
+   "landing": {
+    "state": "merged",
+    "label": "In main",
+    "detail": "branch merged 08-11"
+   },
+   "session_state": {
+    "state": "none",
+    "label": "No session",
+    "detail": ""
+   },
+   "act": {
+    "label": "Retire the workspace",
+    "cmd": "git worktree remove ~/conductor/workspaces/delightful_note_experience/accra"
+   },
+   "when": {
+    "opened": "Aug 11",
+    "last": "Aug 11",
+    "ago": "7d ago",
+    "span": ""
+   }
+  },
+  {
+   "id": "wt-suggest",
+   "title": "grove-suggest",
+   "branch": "suggest-ship",
+   "worktree": "../grove-suggest",
+   "session": null,
+   "ask": null,
+   "criteria": [],
+   "commits": [],
+   "dirty": {
+    "count": 0,
+    "note": "clean"
+   },
+   "verdict": "Fully merged into main, working tree clean.",
+   "next": "git worktree remove ../grove-suggest",
+   "anchor": 5,
+   "zone": "retired",
+   "gcol": 6,
+   "span": 2,
+   "landing": {
+    "state": "merged",
+    "label": "In main",
+    "detail": "branch merged 08-16"
+   },
+   "session_state": {
+    "state": "none",
+    "label": "No session",
+    "detail": ""
+   },
+   "act": {
+    "label": "Retire the worktree",
+    "cmd": "git worktree remove ../grove-suggest"
+   },
+   "when": {
+    "opened": "Aug 16",
+    "last": "Aug 16",
+    "ago": "2d ago",
+    "span": ""
+   }
+  }
+ ],
+ "worktree_state": {
+  "title": "The root working tree",
+  "path": "Desktop/repos/delightful_note_experience",
+  "groups": [
+   {
+    "tone": "rose",
+    "label": "Revert \u2014 formatter damage",
+    "detail": "3 files, +206,537 lines",
+    "files": [
+     "Grove/Resources/preview/katex/katex.min.css",
+     "Grove/Resources/preview/katex/katex.min.js",
+     "Grove/Resources/preview/mermaid/mermaid.min.js"
+    ],
+    "note": "Third-party minified bundles, prettified by a hook. Differ from HEAD even ignoring whitespace."
+   },
+   {
+    "tone": "rose",
+    "label": "Ignore \u2014 never commit",
+    "detail": "495 MB untracked",
+    "files": [
+     "system_logs.logarchive/ (486 MB)",
+     "shots-ios/ (8.6 MB)",
+     ".claude/settings.local.json"
+    ],
+    "note": "None of these are in .gitignore. One `git add -A` and they are in history forever."
+   },
+   {
+    "tone": "amber",
+    "label": "Judge line by line",
+    "detail": "12 docs, mostly table reflow",
+    "files": [
+     "docs/2026-08-08-handoff.md",
+     "docs/artboard-inventory.md",
+     "docs/suggest-ship/*",
+     "docs/superpowers/specs/*",
+     "tasks/todo-suggest-ship.md"
+    ],
+    "note": "The same hook re-aligned markdown tables. A few carry real edits underneath \u2014 diff with -w before deciding."
+   },
+   {
+    "tone": "amber",
+    "label": "Generated \u2014 regenerate, don't commit",
+    "detail": "2 files, +80,084 lines",
+    "files": [
+     "scripts/tasktrace/task-time-audit.html",
+     "scripts/tasktrace/trace-full.json"
+    ],
+    "note": "Output of a tasktrace run. Also dirty in the sync worktree, for the same reason."
+   },
+   {
+    "tone": "moss",
+    "label": "Commit \u2014 real, intentional",
+    "detail": "4 paths, small",
+    "files": [
+     ".githooks/",
+     ".github/",
+     ".docgarden.toml",
+     ".docgarden/",
+     "tasks/2026-08-05-seven-lanes.md"
+    ],
+    "note": "Config and a task note that belong in the repo. Add by name."
+   }
+  ]
+ },
+ "decisions": [
+  {
+   "date": "08-16",
+   "text": "A visual change is not done until it has been looked at. Written into CLAUDE.md at HEAD, after the ghost overlap and floating bullets both merged behind a green suite on the same day.",
+   "tone": "amber"
+  },
+  {
+   "date": "08-16",
+   "text": "The ghost stands only on empty ground, and waits for writing \u2014 suggest never overlays existing text and never fires on review.",
+   "tone": "moss"
+  },
+  {
+   "date": "08-16",
+   "text": "The bar for suggest is Cursor's Tab, used live on this Mac, not described. Every builder and critic reads one dossier.",
+   "tone": "moss"
+  },
+  {
+   "date": "08-16",
+   "text": "Posters are generated from a closed element vocabulary with a blunt SVG sanitizer \u2014 the renderer never trusts a provider.",
+   "tone": "moss"
+  },
+  {
+   "date": "08-16",
+   "text": "Quiet syntax: markers never render, rhythm is em-based, the caret goes transparent. Reveal is gone by design.",
+   "tone": "moss"
+  },
+  {
+   "date": "08-18",
+   "text": "Open, undecided: does the honesty layer clear NotebookLM blind? Everything else on this canvas is settled.",
+   "tone": "violet"
+  }
+ ],
+ "method": {
+  "title": "How this was read",
+  "items": [
+   "git worktree list, for-each-ref and merge-base \u2014 worktrees, 21 branches, merge state, 58 unpushed commits",
+   "ps + lsof \u2014 7 live `claude` processes, their working directory and launch prompt",
+   "~/.claude/projects/*/*.jsonl \u2014 each session's opening ask, turn count and last activity",
+   "Every process matched to its transcript by start time; all 7 matched within 4 seconds",
+   "git diff -w and whitespace-stripped hashes \u2014 to tell formatter churn from authored change"
+  ]
+ },
+ "legend": [
+  {
+   "k": "landing",
+   "items": [
+    {
+     "tone": "danger",
+     "text": "not in main \u2014 needs a decision"
+    },
+    {
+     "tone": "accent",
+     "text": "in main \u2014 already merged"
+    },
+    {
+     "tone": "dim",
+     "text": "no branch \u2014 nothing to merge"
+    }
+   ]
+  },
+  {
+   "k": "session",
+   "items": [
+    {
+     "tone": "live",
+     "text": "a Claude session is still running"
+    },
+    {
+     "tone": "warn",
+     "text": "session open but idle"
+    },
+    {
+     "tone": "dim",
+     "text": "no session open"
+    }
+   ]
+  }
+ ]
+}

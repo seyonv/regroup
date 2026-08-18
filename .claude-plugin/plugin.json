@@ -1,0 +1,11 @@
+{
+  "name": "regroup",
+  "version": "0.1.0",
+  "description": "Rebuild lost context across branches, worktrees and open Claude Code sessions — one canvas showing what you asked for and whether it landed.",
+  "author": {
+    "name": "Seyon Vasantharajan"
+  },
+  "homepage": "https://github.com/seyonv/regroup",
+  "repository": "https://github.com/seyonv/regroup",
+  "keywords": ["git", "worktrees", "sessions", "context", "canvas", "productivity"]
+}
