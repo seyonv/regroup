@@ -59,8 +59,9 @@ dashed wires; retired worktrees sit below on solid ones. Sessions whose work alr
 landed become small tombstones directly under the merge that absorbed them — present,
 but no longer competing for your attention.
 
-The page **is** the canvas. Title, legend and actions float in a small HUD you can
-pan underneath.
+The page **is** the canvas. Chrome is one 46px bar across the top and the canvas starts
+below it, so nothing is ever hidden behind a floating panel. Overview, legend and the
+actions drawer open from that bar on demand and dismiss when you touch the canvas.
 
 ### Each card is the context you lost, in four shapes
 

@@ -39,7 +39,8 @@
   ],
   "greeting": "Let's pick up where you left off.",
   "intro": "Six Claude Code sessions, five worktrees and 21 branches in this repo, read back into one picture: what each one was asked to do, what it decided, how far it got, and whether any of it reached main.",
-  "asof": "Tuesday Aug 18, 16:18"
+  "asof": "Tuesday Aug 18, 16:18",
+  "oneline": "6 Claude sessions \u00b7 5 worktrees \u00b7 21 branches \u00b7 58 commits unpushed"
  },
  "actions": [
   {

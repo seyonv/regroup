@@ -56,7 +56,7 @@ h1,h2,h3,h4{margin:0;font-weight:700;font-family:inherit;text-wrap:balance}
 .t-warn,.t-amber{color:var(--warn)} .t-live,.t-violet{color:var(--live)} .t-ink{color:var(--fg)}
 
 /* ---------------- the canvas is the page ---------------- */
-#shell{position:fixed;inset:0;background:var(--sunk);overflow:hidden;cursor:grab;
+#shell{position:fixed;top:46px;left:0;right:0;bottom:0;background:var(--sunk);overflow:hidden;cursor:grab;
   background-image:radial-gradient(var(--line) 1.2px,transparent 1.2px);background-size:24px 24px}
 #shell.drag{cursor:grabbing}
 .world{position:absolute;top:0;left:0;transform-origin:0 0;padding:34px;width:max-content}
@@ -172,41 +172,57 @@ button.cmd.done{color:var(--accent);border-color:var(--accent)}
 .chipcard .ln b{color:var(--accent);font-weight:700}
 .chipcard .act{margin-top:9px;padding-top:9px}
 
-/* ---------------- floating HUD ---------------- */
-.hud{position:fixed;z-index:30;background:var(--hud);border:1px solid var(--line);
-  border-radius:9px;box-shadow:var(--shadow-lg);backdrop-filter:blur(8px)}
-#hud-title{top:14px;left:14px;padding:14px 17px;width:min(40vw,560px)}
-#hud-title .top{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin-bottom:5px}
-#hud-title b{font-size:12.5px}
-.greet{font-size:18px;font-weight:700;line-height:1.3;color:var(--fg);margin-bottom:6px}
-#hud-title .intro{font-size:11.5px;color:var(--dim);line-height:1.55;margin-bottom:9px}
-#hud-title h1{font-size:13.5px;line-height:1.4;padding:7px 10px;border-radius:6px;
+/* ---------------- one thin bar, everything else on demand ----------------
+   The canvas is the product; chrome that permanently covers it is a bug. The
+   bar owns a 46px strip and the shell starts below it, so nothing is hidden. */
+#topbar{position:fixed;top:0;left:0;right:0;height:46px;z-index:40;display:flex;
+  align-items:center;gap:14px;padding:0 12px;background:var(--hud);
+  border-bottom:1px solid var(--line);backdrop-filter:blur(8px)}
+#topbar .brand{display:flex;align-items:baseline;gap:9px;flex:0 0 auto;white-space:nowrap}
+#topbar .brand b{font-size:12.5px}
+#topbar .line{flex:1;min-width:0;display:flex;align-items:baseline;gap:10px;
+  overflow:hidden;white-space:nowrap}
+#topbar .greet{font-size:13px;font-weight:700;flex:0 0 auto}
+#topbar .oneline{font-size:11.5px;color:var(--dim);overflow:hidden;text-overflow:ellipsis}
+#topbar .right{display:flex;gap:6px;flex:0 0 auto}
+.barbtn{font:inherit;font-size:11.5px;background:var(--bg);color:var(--fg);cursor:pointer;
+  border:1px solid var(--line);border-radius:7px;padding:5px 11px;white-space:nowrap}
+.barbtn:hover{border-color:var(--accent);color:var(--accent)}
+.barbtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.barbtn[aria-expanded=true]{background:var(--line)}
+.barbtn .caret{color:var(--faint);margin-left:5px}
+.drop{position:fixed;top:46px;z-index:39;background:var(--hud);border:1px solid var(--line);
+  border-top:0;border-radius:0 0 10px 10px;box-shadow:var(--shadow-lg);backdrop-filter:blur(8px);
+  padding:14px 17px;display:none}
+.drop.on{display:block}
+#drop-overview{left:12px;width:min(46vw,560px)}
+#drop-legend{right:12px;width:min(52vw,640px)}
+#drop-overview .intro{font-size:11.5px;color:var(--dim);line-height:1.6;margin-bottom:10px}
+#drop-overview h1{font-size:13.5px;line-height:1.4;padding:7px 10px;border-radius:6px;
   background:var(--tint-warn);border:1px solid var(--line);color:var(--fg)}
-#hud-title h1::before{content:"the verdict  ";font-size:10px;letter-spacing:.08em;
+#drop-overview h1::before{content:"the verdict  ";font-size:10px;letter-spacing:.08em;
   text-transform:uppercase;color:var(--warn);font-weight:700}
-#hud-title .hsub{font-size:11px;color:var(--dim);margin-top:4px;line-height:1.5}
-.figs{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}
+#drop-overview .hsub{font-size:11.5px;color:var(--dim);margin-top:9px;line-height:1.55}
+.figs{display:flex;gap:5px;flex-wrap:wrap;margin-top:11px}
 .fig{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:2px 8px;
   font-size:11px;color:var(--dim);white-space:nowrap}
 .fig b{font-size:13px;font-variant-numeric:tabular-nums}
-#hud-legend{top:14px;right:14px;padding:10px 13px;font-size:11.5px}
-#hud-legend .row{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
-#hud-legend .row+.row{margin-top:7px}
-#hud-legend .k{color:var(--faint);width:74px;flex:0 0 auto;font-size:10.5px;
+#drop-legend .row{display:flex;gap:7px;align-items:center;flex-wrap:wrap;font-size:11.5px}
+#drop-legend .row+.row{margin-top:8px}
+#drop-legend .k{color:var(--faint);width:78px;flex:0 0 auto;font-size:10.5px;
   text-transform:uppercase;letter-spacing:.06em}
-#hud-legend .it{display:inline-flex;align-items:center;gap:5px;color:var(--dim);
+#drop-legend .it{display:inline-flex;align-items:center;gap:5px;color:var(--dim);
   border:1px solid var(--line);background:var(--bg);border-radius:9px;padding:1px 8px}
-#hud-legend i{width:7px;height:7px;border-radius:50%;display:block}
-#hud-shapes{left:14px;bottom:14px;padding:9px 13px;font-size:11.5px;color:var(--dim)}
-#hud-shapes span{margin-right:12px;white-space:nowrap}
-#hud-shapes b{color:var(--fg)}
-.controls{position:fixed;right:14px;bottom:14px;display:flex;gap:6px;z-index:30}
-.controls button,.toggle{font:inherit;font-size:12px;background:var(--hud);color:var(--fg);
-  border:1px solid var(--line);border-radius:8px;padding:7px 12px;cursor:pointer;
-  backdrop-filter:blur(8px);box-shadow:var(--shadow-lg)}
-.controls button:hover,.toggle:hover{border-color:var(--accent);color:var(--accent)}
-.controls button:focus-visible,.toggle:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.toggle{position:fixed;right:14px;top:calc(14px + 96px);z-index:31;font-weight:600}
+#drop-legend i{width:7px;height:7px;border-radius:50%;display:block}
+#drop-legend .shapes{margin-top:11px;padding-top:10px;border-top:1px solid var(--line);
+  font-size:11.5px;color:var(--dim);display:flex;gap:14px;flex-wrap:wrap}
+#drop-legend .shapes b{color:var(--fg)}
+.controls{display:flex;gap:4px;flex:0 0 auto;padding-right:8px;margin-right:4px;
+  border-right:1px solid var(--line)}
+.controls button{font:inherit;font-size:11.5px;background:var(--bg);color:var(--fg);
+  border:1px solid var(--line);border-radius:7px;padding:5px 10px;cursor:pointer}
+.controls button:hover{border-color:var(--accent);color:var(--accent)}
+.controls button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 /* ---------------- drawer ---------------- */
 #drawer{position:fixed;top:0;right:0;height:100%;width:min(520px,94vw);z-index:40;
@@ -343,9 +359,21 @@ document.getElementById('app').innerHTML =
  + '<div class="band chips">'+zone('chip')+'</div>'
  + '<div class="band retired">'+zone('retired')+'</div></div></div>'
 
- + '<div class="hud" id="hud-title"><div class="top"><span class="lab">regroup</span>'
- + '<b>'+esc(D.repo)+'</b><span class="lab">as of '+esc(D.headline.asof)+'</span></div>'
- + '<div class="greet">'+esc(D.headline.greeting)+'</div>'
+ + '<div id="topbar">'
+ + '<div class="brand"><span class="lab">regroup</span><b>'+esc(D.repo)+'</b>'
+ + '<span class="lab">'+esc(D.headline.asof)+'</span></div>'
+ + '<div class="line"><span class="greet">'+esc(D.headline.greeting)+'</span>'
+ + '<span class="oneline">'+esc(D.headline.oneline)+'</span></div>'
+ + '<div class="right">'
+ + '<div class="controls"><button id="zo">&minus;</button>'
+ + '<button id="fitw">fit width</button><button id="fita">fit all</button>'
+ + '<button id="zi">+</button></div>'
+ + '<button class="barbtn" id="b-over" aria-expanded="false">overview<span class="caret">&#9662;</span></button>'
+ + '<button class="barbtn" id="b-leg" aria-expanded="false">legend<span class="caret">&#9662;</span></button>'
+ + '<button class="barbtn" id="b-draw">what to do &middot; '+D.actions.length+'</button>'
+ + '</div></div>'
+
+ + '<div class="drop" id="drop-overview">'
  + '<div class="intro">'+esc(D.headline.intro)+'</div>'
  + '<h1>'+esc(D.headline.verdict)+'</h1>'
  + '<div class="hsub">'+esc(D.headline.reassurance)+'</div>'
@@ -353,22 +381,14 @@ document.getElementById('app').innerHTML =
      return '<span class="fig"><b class="t-'+s.tone+'">'+esc(s.n)+'</b> '+esc(s.label)+'</span>';
    }).join('')+'</div></div>'
 
- + '<div class="hud" id="hud-legend">'+D.legend.map(function(g){
+ + '<div class="drop" id="drop-legend">'+D.legend.map(function(g){
      return '<div class="row"><span class="k">'+(g.k==='landing'?'in main?':'session?')+'</span>'
        + g.items.map(function(it){ return '<span class="it"><i style="background:var(--'
-          + it.tone+')"></i>'+esc(it.text)+'</span>'; }).join('')+'</div>'; }).join('')+'</div>'
-
- + '<div class="hud" id="hud-shapes">'
- + '<span><b>“ ”</b> the prompt you gave</span>'
- + '<span><b class="t-accent">◆</b> a decision</span>'
- + '<span><b>▣</b> task</span>'
- + '<span><b>└ □</b> subtask</span>'
- + '<span>drag to pan · scroll to zoom</span></div>'
-
- + '<button class="toggle" id="dtoggle">what to do · '+D.actions.length+'</button>'
- + '<div class="controls"><button id="zo">−</button>'
- + '<button id="fitw">fit width</button><button id="fita">fit all</button>'
- + '<button id="zi">+</button></div>'
+          + it.tone+')"></i>'+esc(it.text)+'</span>'; }).join('')+'</div>'; }).join('')
+ + '<div class="shapes"><span><b>&ldquo; &rdquo;</b> the prompt you gave</span>'
+ + '<span><b class="t-accent">&#9670;</b> a decision</span>'
+ + '<span><b>&#9635;</b> task</span><span><b>&#9492; &#9633;</b> subtask</span>'
+ + '<span>drag to pan &middot; scroll to zoom</span></div></div>'
 
  + '<aside id="drawer"><button class="closex" id="dclose">close</button>'
  + '<h2>What to do, in order</h2><p class="lede">Ranked by what is lost if you do nothing.</p>'
@@ -458,9 +478,32 @@ document.getElementById('zo').onclick=function(){zoom(1/1.22);};
 document.getElementById('fita').onclick=fitAll;
 document.getElementById('fitw').onclick=fitWidth;
 const drawer=document.getElementById('drawer');
-document.getElementById('dtoggle').onclick=function(){drawer.classList.toggle('on');};
+/* Only one drop panel at a time, and both start closed: the canvas is the
+   product, so chrome is opt-in. */
+function drop(btnId, panelId){
+  const b=document.getElementById(btnId), p=document.getElementById(panelId);
+  b.onclick=function(){
+    const open=!p.classList.contains('on');
+    document.querySelectorAll('.drop').forEach(function(o){o.classList.remove('on');});
+    document.querySelectorAll('.barbtn[aria-expanded]').forEach(function(o){
+      o.setAttribute('aria-expanded','false');});
+    if(open){ p.classList.add('on'); b.setAttribute('aria-expanded','true'); }
+  };
+}
+drop('b-over','drop-overview'); drop('b-leg','drop-legend');
+document.getElementById('b-draw').onclick=function(){drawer.classList.toggle('on');};
+shell.addEventListener('pointerdown',function(){
+  document.querySelectorAll('.drop').forEach(function(o){o.classList.remove('on');});
+  document.querySelectorAll('.barbtn[aria-expanded]').forEach(function(o){
+    o.setAttribute('aria-expanded','false');});
+});
 document.getElementById('dclose').onclick=function(){drawer.classList.remove('on');};
-document.addEventListener('keydown',function(e){ if(e.key==='Escape') drawer.classList.remove('on'); });
+document.addEventListener('keydown',function(e){ if(e.key!=='Escape') return;
+  drawer.classList.remove('on');
+  document.querySelectorAll('.drop').forEach(function(o){o.classList.remove('on');});
+  document.querySelectorAll('.barbtn[aria-expanded]').forEach(function(o){
+    o.setAttribute('aria-expanded','false');});
+});
 document.addEventListener('click',function(e){
   const b=e.target.closest('button.cmd'); if(!b) return;
   const old=b.textContent;

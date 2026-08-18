@@ -112,10 +112,19 @@ Then publish it as an Artifact and give the user the link. Take a screenshot and
 
 ## The visual language
 
-The page **is** the canvas; everything else floats in a small HUD. `main` runs as a
-horizontal rail; open work hangs above it on dashed wires, finished worktrees sit below
-on solid ones, and sessions whose work already landed become tombstones directly under
-the merge that absorbed them.
+The page **is** the canvas. Chrome gets one 46px top bar and the shell starts *below*
+it, so nothing ever covers the work: the bar carries the greeting, a one-line count, the
+zoom controls, and three buttons that open the overview, the legend, and the actions
+drawer on demand. All of them start closed, only one opens at a time, and a click on the
+canvas dismisses them.
+
+`main` runs as a horizontal rail; open work hangs above it on dashed wires, finished
+worktrees sit below on solid ones, and sessions whose work already landed become
+tombstones directly under the merge that absorbed them.
+
+Every card opens with a clock strip — `opened → last touched · how long open` and a
+relative badge that runs violet within the hour and rust past five days — because the
+reader is usually panned away from the rail and cannot read dates off it.
 
 Inside a card, hierarchy is carried by shape so it reads before it is read:
 
