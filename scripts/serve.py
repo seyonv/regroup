@@ -52,7 +52,7 @@ CHAT_TOOLS = ["Read", "Grep", "Glob",
               "Bash(ls:*)", "Bash(wc:*)"]
 
 
-INTERACTIVE = re.compile(r"^claude\b|\b(less|more|vim?|nano|emacs|top|htop)\b|"
+INTERACTIVE = re.compile(r"^claude\b|(^|[|;&]\s*)(less|more|vim?|nano|emacs|top|htop)(\s|$)|"
                          r"git (rebase|add|checkout|reset|stash) (-i|-p|--interactive|--patch)\b|"
                          r"git commit(?!.*(\s-m|\s-F|--no-edit|--amend -F))")
 
@@ -316,7 +316,7 @@ def save_chat(board, chat_id, turns, answer):
     except (OSError, ValueError):
         old = {"id": cid, "started": int(time.time() * 1000)}
     old["turns"] = [{"role": t["role"], "content": t["content"]} for t in turns] + \
-                   [{"role": "assistant", "content": answer}]
+                   [{"role": "assistant", "content": re.sub(r"\s*\[\[focus:[\w-]+\]\]\s*", " ", answer).strip()}]
     old["title"] = next(t["content"] for t in old["turns"] if t["role"] == "user")[:90]
     old["updated"] = int(time.time() * 1000)
     f.write_text(json.dumps(old, indent=1))

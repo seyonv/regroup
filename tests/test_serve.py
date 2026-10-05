@@ -39,7 +39,9 @@ class Interactive(unittest.TestCase):
                     'git commit -m "x"',
                     "git cherry-pick origin/evals && git log -1 --format=%B | "
                     "grep -v -e Co-Authored-By -e Claude-Session | git commit --amend -F -",
-                    "git log --oneline -3 main"]:
+                    "git log --oneline -3 main",
+                    "git log -p main..less-friction-verification",
+                    "git branch -D more-tests top-bar"]:
             with self.subTest(cmd=cmd):
                 self.assertFalse(serve.interactive(cmd))
 
@@ -88,6 +90,20 @@ class BoardCommands(unittest.TestCase):
                                 {"act": {"cmd": "git show x:y | less"}},
                                 {}]}
         self.assertEqual(serve.runnable(data), {"git push origin main", "git branch -D list"})
+
+
+class SavedChats(unittest.TestCase):
+    """A reopened chat shows the answer as it was read, without the focus marker."""
+
+    def test_focus_marker_is_not_saved(self):
+        import json
+        import tempfile
+        with tempfile.TemporaryDirectory() as d:
+            board = Path(d) / "regroup.json"
+            serve.save_chat(board, "c1", [{"role": "user", "content": "What first?"}],
+                            "The honesty layer.\n\n[[focus:honesty]]")
+            saved = json.loads((Path(d) / "chats" / "c1.json").read_text())
+            self.assertEqual(saved["turns"][-1]["content"], "The honesty layer.")
 
 
 if __name__ == "__main__":

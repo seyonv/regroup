@@ -2,11 +2,11 @@
 
 <p align="center">
   <strong>Pick up where you left off.</strong><br>
-  Every branch, worktree and open Claude Code session in one canvas · what you asked for · whether it landed.
+  Every branch, worktree and open Claude Code session in one live canvas · what you asked for · whether it landed · run the next step from the page.
 </p>
 
 <p align="center">
-  <img src="docs/images/canvas-overview.png" alt="The regroup canvas: four open workstreams above a timeline rail, each showing the prompt that started it, the decisions made, and its tasks and subtasks." width="100%">
+  <img src="docs/images/canvas-overview.png" alt="The regroup board served locally: four open workstreams, each showing the prompt that started it, the decisions made and its tasks, with a run button under a card's command. The top bar shows +1 new and a live indicator; a chat panel on the right answers what needs attention first." width="100%">
 </p>
 
 `git branch` gives you a list of names. This gives you back your own head.
@@ -44,6 +44,8 @@ existed. The board then stays live, and it runs a command only when you click
 ```bash
 git clone https://github.com/seyonv/regroup ~/src/regroup
 python3 ~/src/regroup/scripts/collect.py /path/to/your/repo > state.json
+# write regroup.json from state.json (the skill does this), then:
+python3 ~/src/regroup/scripts/serve.py regroup.json
 ```
 
 Python 3.10+. Standard library only — no dependencies, no build step, nothing to
@@ -62,7 +64,8 @@ but no longer competing for your attention.
 
 The page **is** the canvas. Chrome is one 46px bar across the top and the canvas starts
 below it, so nothing is ever hidden behind a floating panel. Overview, legend and the
-actions drawer open from that bar on demand and dismiss when you touch the canvas.
+actions drawer open from that bar on demand and dismiss when you touch the canvas. The
+chat sits beside the canvas rather than over it, and hides from the same bar.
 
 ### Each card is the context you lost, in four shapes
 
@@ -107,6 +110,8 @@ corner of the canvas and still know exactly when.
 
 ### A live board, served locally
 
+<img src="docs/images/actions-drawer.png" alt="The what-to-do drawer: Push main to origin is struck through because the probe saw main pushed; the next actions have run buttons and mark-done ticks; Retire three finished worktrees is struck through because both branches are gone." width="30%" align="right">
+
 `/regroup` writes the board to `~/.claude/regroup/<repo>/` and opens it on
 `127.0.0.1` from a small standard-library server (`scripts/serve.py`). Leave it open:
 
@@ -129,13 +134,17 @@ corner of the canvas and still know exactly when.
   **+N new**, and work merged on GitHub as **↓N to pull**. Re-run `/regroup` to
   turn new work into cards.
 
+<br clear="right">
+
+<img src="docs/images/chat.png" alt="The chat panel answering What needs me first, and why? It lists the read-only git commands it ran, says the honesty layer needs attention first because its branch holds the only unmerged work, notes which board items are now out of date, and puts a run button beside a git log command. The board has flown to the honesty layer card." width="100%">
+
 Click any card to fly to it at reading size; click again or press Esc to fly back.
 Work from Claude Code cloud sessions (found through the branches they push) carries
 a blue **Claude Code cloud** badge.
 
 ### A control surface, not just a map
 
-<img src="docs/images/trunk-and-tombstones.png" alt="The lower half of the canvas: the main rail with eight merge nodes, tombstones for finished sessions hanging beneath them, and retired worktree cards with their removal commands." width="100%">
+<img src="docs/images/trunk-and-tombstones.png" alt="The lower half of the canvas: the main rail with eight merge nodes, tombstones for finished sessions hanging beneath them, and three retired worktree cards hatched and stamped Done, closed loop, kept for context, their removal commands struck through." width="100%">
 
 Every card carries the one command that acts on it, to copy or run:
 
@@ -167,7 +176,7 @@ matches them by **start time** — process elapsed time from `ps` against the
 transcript's first entry timestamp — claiming nearest-first so two sessions never
 take the same transcript.
 
-On the repo in these screenshots, all 7 processes matched within **4 seconds** of
+On the repo behind the example board, all 7 processes matched within **4 seconds** of
 their transcript's first message.
 
 Without this you can only guess which of six identical terminal tabs holds the work
@@ -199,7 +208,7 @@ reassuring sentence in the report and it is cheap to verify.
 ```
 scripts/collect.py <repo-root>          # facts -> JSON on stdout
 scripts/render.py  <data.json> <out.html>
-scripts/serve.py   <data.json>          # the live local board: probe, run, chat
+scripts/serve.py   <data.json> [--port N] [--no-open]   # the live local board: probe, run, chat
 scripts/probe_server.py                 # the same live probe as a stdio MCP server
 skills/regroup/SKILL.md                 # the workflow, schema, and design rules
 example/regroup.json                    # a real, complete board to copy from
