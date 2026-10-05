@@ -418,10 +418,10 @@ function tree(t){
   }
   if(t.tasks && t.tasks.length){
     const done=t.tasks.filter(function(x){return x.state==='done';}).length;
-    h += '<div class="tasks-wrap"><span class="lab">tasks &middot; '+done+' of '+t.tasks.length
+    h += '<div class="tasks-wrap"><span class="lab tcount">tasks &middot; '+done+' of '+t.tasks.length
       + ' done</span><div class="tasks">'
-      + t.tasks.map(function(k){
-          return '<div class="task '+k.state+'"><div class="task-h">'
+      + t.tasks.map(function(k,i){
+          return '<div class="task '+k.state+'" data-k="'+i+'"><div class="task-h">'
             + '<span class="gl">'+GL[k.state]+'</span><span>'+esc(k.text)+'</span>'
             + (k.ref?'<span class="ref">'+esc(k.ref)
                  + (k.date?'<b>'+esc(k.date)+'</b>':'')+'</span>':'<span></span>')+'</div>'
@@ -827,22 +827,31 @@ function api(path,body,signal){
     if(c.pid_gone) return p.alive.indexOf(c.pid_gone)<0;
     if(c.on_main) return p.on_main.indexOf(c.on_main)>=0;
     if(c.path_on_main) return (p.paths_on_main||[]).indexOf(c.path_on_main)>=0;
+    if(c.answered) return !!(p.turns&&p.turns[c.answered]&&p.turns[c.answered].answered);
     if(c.pr_merged) return !!(p.prs&&p.prs[c.pr_merged]&&p.prs[c.pr_merged].state==='MERGED');
     return false;
   }
   function all(list,p){ return !!(p&&list&&list.length&&list.every(function(c){return chk(c,p);})); }
   function walk(list,fn){ (list||[]).forEach(function(c){ if(c.any) walk(c.any,fn); else fn(c); }); }
   const pids=[], subjects=[], paths=[];
+  /* A card's session: session_id, or the uuid in its `claude --resume` command. */
+  function sid(w){ if(w.session_id) return w.session_id;
+    const m=((w.act&&w.act.cmd)||'').match(/--resume\s+([0-9a-f-]{36})/); return m?m[1]:''; }
+  const sessions=[];
   function gather(list){ walk(list,function(c){ if(c.pid_gone&&pids.indexOf(c.pid_gone)<0) pids.push(c.pid_gone);
+    if(c.answered&&sessions.indexOf(c.answered)<0) sessions.push(c.answered);
     if(c.on_main&&subjects.indexOf(c.on_main)<0) subjects.push(c.on_main);
     if(c.path_on_main&&paths.indexOf(c.path_on_main)<0) paths.push(c.path_on_main); }); }
   D.actions.forEach(function(a){ gather(a.done); });
   D.workstreams.forEach(function(w){ gather(w.done); (w.live||[]).forEach(function(r){ gather(r.when); });
-    if(w.pid&&pids.indexOf(w.pid)<0) pids.push(w.pid); });
-  const INPUT={repo_path:D.repo_path,pids:pids,subjects:subjects,paths:paths};
+    ((w.tree&&w.tree.tasks)||[]).forEach(function(k){ gather(k.done); });
+    if(w.pid&&pids.indexOf(w.pid)<0) pids.push(w.pid);
+    if(w.pid&&sid(w)&&sessions.indexOf(sid(w))<0) sessions.push(sid(w)); });
+  const INPUT={repo_path:D.repo_path,pids:pids,subjects:subjects,paths:paths,sessions:sessions};
 
   /* Pulse only what changes while the page is open; the first check just sets
      the scene. */
+  function hhmm(iso){ const d=new Date(iso); return isNaN(d)?'?':String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
   function pulse(el){ if(!applied) return; el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); }
   function flash(el,key,now){ if(seen[key]!==undefined&&seen[key]!==now) pulse(el); seen[key]=now; }
   function setTag(el,cls,state,label,detail){
@@ -871,9 +880,31 @@ function api(path,body,signal){
             el.classList.remove('l-unmerged','l-merged','l-none'); el.classList.add('l-'+r.landing.state); pulse(el); }
         } else { const b=el.querySelector('.ln b'); if(b) b.textContent=r.landing.label; }
       });
-      if(w.pid&&p.alive.indexOf(w.pid)<0&&el.classList.contains('card'))
+      /* Tasks with live checks tick themselves (an in-flight question gets
+         {"answered": uuid}), and the count above them follows. */
+      const tasks=(w.tree&&w.tree.tasks)||[];
+      if(tasks.some(function(k){return k.done&&k.done.length;})){
+        var n=0;
+        tasks.forEach(function(k,i){
+          const row=el.querySelector('.task[data-k="'+i+'"]');
+          const st=(k.done&&k.done.length&&all(k.done,p))?'done':k.state;
+          if(st==='done') n++;
+          if(!row||row.classList.contains(st)) return;
+          row.classList.remove('done','unknown','open'); row.classList.add(st);
+          row.querySelector('.gl').textContent=GL[st]; pulse(row); });
+        const c=el.querySelector('.tcount'); if(c) c.innerHTML='tasks &middot; '+n+' of '+tasks.length+' done';
+      }
+      const gone=w.pid&&p.alive.indexOf(w.pid)<0, turn=p.turns&&p.turns[sid(w)];
+      if(gone&&el.classList.contains('card'))
         if(setTag(el,'s','closed','Session closed','pid '+w.pid+' has exited')) pulse(el);
-      if(w.done&&w.done.length){ const done=all(w.done,p);
+      /* Running is not working: a session whose last prompt has its answer is
+         waiting on you, whatever the board said when it was built. */
+      if(!gone&&w.pid&&turn&&el.classList.contains('card'))
+        if(turn.answered) { if(setTag(el,'s','idle','Idle, answered','last reply '+hhmm(turn.answered_at)+'; waiting on you')) pulse(el); }
+        else if(turn.last_prompt_at&&setTag(el,'s','live','Working','on your prompt from '+hhmm(turn.last_prompt_at))) pulse(el);
+      /* A session with nothing to land is a closed loop once it exits. */
+      const auto=!(w.done&&w.done.length)&&w.pid&&w.landing&&w.landing.state==='none'&&gone;
+      if(w.done&&w.done.length||auto){ const done=auto||all(w.done,p);
         if(el.classList.contains('done')!==done) rewire=true;
         el.classList.toggle('done',done); flash(el,'w'+w.id,done); }
     });

@@ -166,6 +166,16 @@ command that acts on it. Schema:
 }
 ```
 
+**Read the turn before writing a session's state.** `collect.py` gives every
+transcript a `turn` (from its tail, via `probe_server.turn_state`): `answered`,
+`last_prompt`, `answered_at`, and `recent_prompts`. A running pid is not a working
+session. Only `answered: false` justifies "Working right now" or an `open` task
+for the last question. With `answered: true` the session is idle and waiting on
+the user, and `recent_prompts` often shows they already closed the loop ("we can
+close this session"). Never take "the last question" from `prompts`: that list
+comes from the head of the transcript. Any task for a question still in flight
+gets `"done": [{"answered": "<uuid>"}]` so it ticks itself when the answer lands.
+
 Deriving the **tree** is the highest-value work. Build tasks from commits (subject +
 sha as `ref`) and from the success criteria stated in the original prompt. Mark
 `unknown` — not `open` — when a bar was set but never demonstrably met; that honesty is
@@ -261,7 +271,15 @@ skill the user reloads once. It exits after 30 minutes with no request. Behind t
 "known": {"branches": [], "remote_branches": [], "worktrees": [], "pids": [], "sessions": [transcript ids]}
 ```
 
-A check is one of `{"pushed": true}`, `{"branch_gone": name}`, `{"remote_gone": "origin/x"}`,
+Tasks inside `tree.tasks` take the same `done` list and tick themselves, and the
+"N of M done" count follows. Every card with a `pid` and a `claude --resume <uuid>`
+command (or `session_id`) also has its session turn probed. If the pid is alive and
+the last prompt is answered, the tag becomes "Idle, answered". A card whose
+`landing.state` is `none` (nothing to land) closes itself when its pid exits,
+because it is a closed loop.
+
+A check is one of `{"pushed": true}`, `{"answered": "<session uuid>"}` (the last
+typed prompt has an answer that ended after it), `{"branch_gone": name}`, `{"remote_gone": "origin/x"}`,
 `{"worktree_gone": path}`, `{"pid_gone": n}`, `{"on_main": "commit subject prefix"}`
 (matches cherry-picks and merges alike), or `{"any": [check, …]}`. Give every action a
 `done` list unless nothing can verify it (hand tests); those get a "mark done" tick
@@ -343,6 +361,17 @@ rules, pill chips, monospace throughout — extended by exactly three hues: ambe
 violet for live, and blue (`--cloud`) for work that ran in Claude Code cloud.
 
 ## Traps that cost real time
+
+- **A board froze a finished conversation as "working".** On 10-05 a card said
+  "Working right now" and listed "your last question" as an open task. The question
+  had been answered two hours before the board was built, and the user closed the
+  session minutes after. Two causes. `collect.py` read only the head of the
+  transcript, so nothing said who spoke last. The live layer flipped the session
+  tag on exit but left the card white with an open task. Both are fixed: the
+  `turn` facts and the `answered` check above, the idle-answered tag, and
+  auto-close for sessions with nothing to land. The turn reader skips injected
+  text blocks and falls back to a full read when a pasted image pushes the
+  last prompt out of the 600 KB tail.
 
 - **Read-only git must never take `.git/index.lock`.** `git status` refreshes the
   index under that lock. On a stalled machine, the probe's timeout killed one

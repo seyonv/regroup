@@ -60,7 +60,8 @@ TOOL = {
         "Read-only snapshot of one git repo for a regroup board: current branch, "
         "local and remote branches, main vs upstream, worktrees with dirty counts, "
         "which given commit subjects are on main, which given pids are alive, and "
-        "the Claude Code sessions running in the repo."),
+        "the Claude Code sessions running in the repo, and whether each given session's "
+        "last prompt has been answered."),
     "inputSchema": {
         "type": "object",
         "properties": {
@@ -68,6 +69,7 @@ TOOL = {
             "pids": {"type": "array", "items": {"type": "integer"}},
             "subjects": {"type": "array", "items": {"type": "string"}},
             "paths": {"type": "array", "items": {"type": "string"}},
+            "sessions": {"type": "array", "items": {"type": "string"}},
         },
         "required": ["repo_path"],
     },
@@ -94,6 +96,77 @@ def git(repo, *args):
     except subprocess.TimeoutExpired:
         return ""
     return r.stdout.strip() if r.returncode == 0 else ""
+
+
+PROJECTS = os.path.expanduser("~/.claude/projects")
+TRANSCRIPT = {}      # session id -> path, found once
+
+
+def _prompt_text(e):
+    """The text of a prompt the user typed, or "" for tool results, skill
+    bodies, reminders and other harness-injected user entries."""
+    if e.get("type") != "user" or e.get("isMeta"):
+        return ""
+    c = (e.get("message") or {}).get("content")
+    if isinstance(c, list):
+        if any(isinstance(b, dict) and b.get("type") == "tool_result" for b in c):
+            return ""
+        c = " ".join(b.get("text", "").strip() for b in c if isinstance(b, dict) and b.get("type") == "text"
+                     and not b.get("text", "").lstrip().startswith("<"))
+    t = (c or "").strip()
+    if not t or t.startswith("<") or t.startswith("Base directory for this skill") or "system-reminder" in t[:200]:
+        return ""
+    return t
+
+
+def turn_state(path, tail_bytes=600_000):
+    """Who has the ball in a session: the last prompt the user typed and whether
+    an answer ended after it. A board that reads only the head of a transcript
+    calls a question open that was answered hours ago."""
+    try:
+        size = os.path.getsize(path)
+        with open(path, "rb") as f:
+            f.seek(max(0, size - tail_bytes))
+            lines = f.read().decode("utf-8", "replace").splitlines()
+    except OSError:
+        return None
+    user, user_at, ended_at, last_at, prompts = "", "", "", "", []
+    for line in lines:
+        if not line.startswith("{"):
+            continue
+        try:
+            e = json.loads(line)
+        except ValueError:
+            continue
+        ts = e.get("timestamp") or ""
+        if e.get("type") in ("user", "assistant") and ts:
+            last_at = max(last_at, ts)
+        t = _prompt_text(e)
+        if t:
+            user, user_at = t, ts
+            prompts = (prompts + [t[:300]])[-4:]
+        elif e.get("type") == "assistant" and (e.get("message") or {}).get("stop_reason") == "end_turn":
+            ended_at = max(ended_at, ts)
+    state = {"answered": bool(user_at) and ended_at >= user_at, "last_prompt": user[:300],
+            "last_prompt_at": user_at, "answered_at": ended_at if ended_at >= user_at else "",
+            "last_at": last_at, "recent_prompts": prompts}
+    if not user_at and size > tail_bytes and tail_bytes < 40_000_000:
+        # Pasted images and long tool output can push the last prompt out of the tail.
+        return turn_state(path, 40_000_000)
+    return state
+
+
+def find_transcript(sid):
+    if sid not in TRANSCRIPT:
+        hit = ""
+        if os.path.isdir(PROJECTS):
+            for d in os.listdir(PROJECTS):
+                p = os.path.join(PROJECTS, d, sid + ".jsonl")
+                if os.path.isfile(p):
+                    hit = p
+                    break
+        TRANSCRIPT[sid] = hit
+    return TRANSCRIPT[sid]
 
 
 def alive(pid):
@@ -151,6 +224,7 @@ def probe(args):
     subjects = [str(x) for x in (args.get("subjects") or []) if x]
     pids = [int(x) for x in (args.get("pids") or []) if str(x).isdigit()]
     paths = [str(x) for x in (args.get("paths") or []) if x]
+    sids = [str(x) for x in (args.get("sessions") or []) if str(x).replace("-", "").isalnum()]
     gh = remote_state(repo)
 
     f_head = POOL.submit(git, repo, "rev-parse", "--abbrev-ref", "HEAD")
@@ -165,6 +239,8 @@ def probe(args):
     f_paths = [POOL.submit(git, repo, "ls-tree", "--name-only", "main@{upstream}", "--", x) for x in paths]
     f_paths_local = [POOL.submit(git, repo, "ls-tree", "--name-only", "main", "--", x) for x in paths]
     f_ses = POOL.submit(claude_sessions, repo)
+    f_turns = {x: POOL.submit(lambda x=x: turn_state(find_transcript(x)) if find_transcript(x) else None)
+               for x in sids}
 
     worktrees, cur = [], {}
     for line in f_wt.result().splitlines() + [""]:
@@ -217,6 +293,7 @@ def probe(args):
         "fetched_at": gh["at"],
         "alive": [p for p in pids if alive(p)],
         "sessions": f_ses.result(),
+        "turns": {x: f.result() for x, f in f_turns.items()},
         "ms": int((time.time() - t0) * 1000),
     }
 

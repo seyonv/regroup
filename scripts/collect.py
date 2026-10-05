@@ -18,6 +18,9 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from probe_server import turn_state  # noqa: E402
+
 HOME = Path.home()
 PROJECTS = HOME / ".claude" / "projects"
 
@@ -373,6 +376,8 @@ def read_transcript(path, max_bytes=3_000_000):
                 info["prompts"].append(text[:2000])
             if not info["first_prompt"]:
                 info["first_prompt"] = text[:4000]
+    # The head says what was asked; only the tail says whether it was answered.
+    info["turn"] = turn_state(str(path))
     return info
 
 
