@@ -23,9 +23,10 @@ trying to do* lives only in your head, and it decays in about three days.
 - **Which tabs can I close?** 6 sessions still running, oldest open 5 days. Three of them had their goal met by a later branch they never knew about.
 - **Is anything at risk?** 58 commits on `main` never pushed. And **0** dirty `.swift` files across all five worktrees — nothing you wrote is uncommitted.
 
-It only reads. It writes nothing to your repo, runs no git commands that mutate,
-and adds no instrumentation anywhere — every number comes from logs and objects
-that already existed.
+Building the board only reads. It writes nothing to your repo and adds no
+instrumentation anywhere: every number comes from logs and objects that already
+existed. The board then stays live, and it runs a command only when you click
+**run** and confirm the exact command it shows you.
 
 ---
 
@@ -104,11 +105,39 @@ a relative badge that runs violet when it is minutes and rust when it is over fi
 days. Tasks carry their commit date next to the sha. You can be zoomed into a
 corner of the canvas and still know exactly when.
 
+### A live board, served locally
+
+`/regroup` writes the board to `~/.claude/regroup/<repo>/` and opens it on
+`127.0.0.1` from a small standard-library server (`scripts/serve.py`). Leave it open:
+
+- **It updates itself.** It checks the repo the moment you come back to the tab,
+  every few seconds while it is visible, and once a minute in the background. A
+  check takes well under a second. Push, delete a branch, close a session, merge a
+  PR on GitHub: the action strikes through and the card turns into a hatched
+  **"done · closed loop, kept for context"**. No reload, and the view doesn't move.
+  White means it needs you; hatched means it's history.
+- **Commands run from the page.** Every command on the board has a **run** button.
+  It shows the exact command for you to confirm, in red when it deletes or kills
+  something, then shows the output and re-checks the repo. The server runs only
+  commands that appear on the board. Anything that needs a terminal (`claude
+  --resume`, pagers, `rebase -i`) stays copy-only.
+- **A chat beside the canvas.** Ask about any workstream. It runs `claude -p` in the
+  repo on your own plan, with read-only access to files, git and session
+  transcripts, and flies the board to the card it is talking about. Commands it
+  suggests get the same run button. Conversations are saved and can be reopened.
+- **It notices what it doesn't know.** New branches, worktrees and sessions show as
+  **+N new**, and work merged on GitHub as **↓N to pull**. Re-run `/regroup` to
+  turn new work into cards.
+
+Click any card to fly to it at reading size; click again or press Esc to fly back.
+Work from Claude Code cloud sessions (found through the branches they push) carries
+a blue **Claude Code cloud** badge.
+
 ### A control surface, not just a map
 
 <img src="docs/images/trunk-and-tombstones.png" alt="The lower half of the canvas: the main rail with eight merge nodes, tombstones for finished sessions hanging beneath them, and retired worktree cards with their removal commands." width="100%">
 
-Every card carries the one command that acts on it, click to copy:
+Every card carries the one command that acts on it, to copy or run:
 
 ```
 claude --resume ca370e83-8aec-405b-89c0-c5bcab554c5a   # reopen that exact session
@@ -170,6 +199,8 @@ reassuring sentence in the report and it is cheap to verify.
 ```
 scripts/collect.py <repo-root>          # facts -> JSON on stdout
 scripts/render.py  <data.json> <out.html>
+scripts/serve.py   <data.json>          # the live local board: probe, run, chat
+scripts/probe_server.py                 # the same live probe as a stdio MCP server
 skills/regroup/SKILL.md                 # the workflow, schema, and design rules
 example/regroup.json                    # a real, complete board to copy from
 ```
@@ -179,7 +210,9 @@ example/regroup.json                    # a real, complete board to copy from
 
 The rendered page is one self-contained HTML file: no external requests, no fonts to
 fetch, works from `file://`, and respects `prefers-color-scheme` and
-`prefers-reduced-motion`.
+`prefers-reduced-motion`. Served by `serve.py` it gains the live layer, run buttons
+and chat. The server listens only on 127.0.0.1, and every call must carry the
+board's token.
 
 ---
 
@@ -192,10 +225,9 @@ fetch, works from `file://`, and respects `prefers-color-scheme` and
 - **Layout columns are hand-placed.** `gcol` and `span` are authored per workstream on
   an 8-column grid. Above roughly eight open workstreams you will want to widen the
   grid or promote some to tombstones.
-- **Facts go stale in minutes.** A session can exit while you are reading. Re-run
-  `collect.py` before re-rendering; if a pid has vanished, say so on the card rather
-  than dropping it silently. A board that admits it changed is more trustworthy than
-  one that pretends it did not.
+- **New work needs a re-run.** The live board keeps everything it already shows up
+  to date, but turning a new session into a card (its prompt, decisions and tasks)
+  is a read of the transcript. It shows **+N new** until you re-run `/regroup`.
 - **Transcript format is Claude Code's, and undocumented.** `collect.py` reads it
   defensively and degrades to "no intent found" rather than failing.
 
@@ -208,7 +240,8 @@ python3 -m unittest discover -s tests -v
 Covers the parts with real edge cases: `ps` elapsed-time parsing across all three
 formats (`MM:SS`, `HH:MM:SS`, `DD-HH:MM:SS`), the project-directory slug, duration
 humanising, and the nearest-first session↔transcript matcher including the case where
-two sessions compete for one transcript.
+two sessions compete for one transcript. Also the filters that decide what the page may run:
+which commands need a terminal, and which commands in a chat answer become runnable.
 
 ## License
 

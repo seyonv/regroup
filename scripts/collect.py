@@ -22,9 +22,13 @@ HOME = Path.home()
 PROJECTS = HOME / ".claude" / "projects"
 
 
+# Read-only: never let `git status` take .git/index.lock (see probe_server.py).
+ENV = dict(os.environ, GIT_OPTIONAL_LOCKS="0")
+
+
 def sh(args, cwd=None):
     try:
-        r = subprocess.run(args, cwd=cwd, capture_output=True, text=True, timeout=60)
+        r = subprocess.run(args, cwd=cwd, capture_output=True, text=True, timeout=60, env=ENV)
         return r.stdout.strip()
     except Exception:
         return ""
@@ -137,6 +141,67 @@ def git_facts(root):
         "landed": landed,
     }
 
+
+
+# ------------------------------------------------------- cloud sessions
+# Claude Code cloud sessions leave no transcript and no process on this Mac.
+# What they do leave is git: they push a branch, and their commits are authored
+# by the container's identity (noreply@anthropic.com) with a `Claude-Session:`
+# trailer naming the session. Local commits use the owner's identity, so the
+# author email -- not the trailer, which local sessions can write too -- is
+# what marks a commit as cloud-made.
+
+CLOUD_EMAIL = "noreply@anthropic.com"
+
+
+def _commits(root, rng, limit=None):
+    fmt = "%h%x1f%cs%x1f%ct%x1f%ae%x1f%s%x1f%(trailers:key=Claude-Session,valueonly,separator=%x20)%x1e"
+    args = ["git", "-C", root, "log", f"--format={fmt}"]
+    if limit:
+        args.append(f"-{limit}")
+    out = []
+    for rec in sh(args + [rng]).split("\x1e"):
+        p = rec.strip("\n").split("\x1f")
+        if len(p) < 6:
+            continue
+        out.append({"sha": p[0], "date": p[1], "unix": int(p[2] or 0),
+                    "email": p[3], "subject": p[4],
+                    "session_url": p[5].strip().split(" ")[0] if p[5].strip() else ""})
+    return out
+
+
+def cloud_facts(root, main, fetch=True):
+    remote = sh(["git", "-C", root, "remote"]).splitlines()
+    remote = "origin" if "origin" in remote else (remote[0] if remote else "")
+    if not remote:
+        return {"remote": None, "fetched": False, "branches": [], "landed": []}
+    fetched = False
+    if fetch:
+        try:  # offline or slow remote: report from the last fetch instead
+            fetched = subprocess.run(["git", "-C", root, "fetch", "--prune", "--quiet", remote],
+                                     capture_output=True, timeout=60).returncode == 0
+        except subprocess.TimeoutExpired:
+            pass
+    branches = []
+    for ref in sh(["git", "-C", root, "for-each-ref", "--format=%(refname:short)",
+                   f"refs/remotes/{remote}"]).splitlines():
+        name = ref.split("/", 1)[1] if "/" in ref else ref
+        if name in ("HEAD", main) or ref == remote:
+            continue
+        own = _commits(root, f"{main}..{ref}")
+        cloud = [c for c in own if c["email"] == CLOUD_EMAIL]
+        urls = sorted({c["session_url"] for c in own if c["session_url"]})
+        branches.append({
+            "name": name, "ref": ref,
+            "ahead": len(own),
+            "behind": int(sh(["git", "-C", root, "rev-list", "--count", f"{ref}..{main}"]) or 0),
+            "runtime": "cloud" if cloud or name.startswith("claude/") else "unknown",
+            "session_urls": urls,
+            "has_local_branch": bool(sh(["git", "-C", root, "rev-parse", "--verify", "--quiet", f"refs/heads/{name}"])),
+            "commits": own[:20],
+        })
+    landed = [c for c in _commits(root, main, limit=300) if c["email"] == CLOUD_EMAIL]
+    return {"remote": remote, "fetched": fetched, "branches": branches, "landed": landed}
 
 # ------------------------------------------------------- live sessions
 
@@ -311,21 +376,71 @@ def read_transcript(path, max_bytes=3_000_000):
     return info
 
 
-def transcripts_for(paths, since_days=30):
+def nested_worktree_dirs(root):
+    """Project dirs for worktrees that lived inside the repo and are now gone.
+
+    `git worktree list` only knows the trees still on disk, so a lane removed
+    after it merged takes its whole transcript with it. A nested worktree's slug
+    extends the repo's own, which makes it unambiguous — safe to include always.
+    """
+    own = slug_for(os.path.realpath(root))
+    return [d for d in sorted(PROJECTS.glob(own + "-*")) if d.is_dir()]
+
+
+def sibling_candidates(root, probe_bytes=400_000):
+    """Checkouts beside the repo that MIGHT be its retired lanes.
+
+    A lane cloned next to the repo (grove-nights-caret) shares no slug prefix
+    with it, and nothing in the transcript reliably says which repo it served —
+    a passing mention of the repo's name also fires on unrelated projects that
+    merely referenced it. So this reports candidates with their evidence and
+    never includes one on its own; pass the ones you recognise with --also-dir.
+    """
+    root = os.path.realpath(root)
+    own, parent = slug_for(root), slug_for(os.path.dirname(root))
+    base = os.path.basename(root)
+    marks = {base, base.replace("_", "-"), base.replace("-", "_")}
+    out = []
+    for d in sorted(PROJECTS.glob(parent + "-*")):
+        if not d.is_dir() or d.name == own or d.name.startswith(own + "-"):
+            continue
+        files = sorted(d.glob("*.jsonl"), key=lambda x: -x.stat().st_mtime)
+        if not files:
+            continue
+        try:
+            head = files[0].read_text(errors="replace")[:probe_bytes]
+        except OSError:
+            continue
+        # Every sibling is reported, hits included, because a lane that never
+        # named the main checkout is still a lane — the count is evidence for
+        # the reader to weigh, not a filter that quietly drops the quiet ones.
+        out.append({"dir": d.name, "sessions": len(files),
+                    "name_hits": sum(head.count(m) for m in marks),
+                    "newest": max(f.stat().st_mtime for f in files),
+                    "mb": sum(f.stat().st_size for f in files) // 1048576})
+    return sorted(out, key=lambda c: -c["newest"])
+
+
+def transcripts_for(paths, since_days=30, extra_dirs=()):
     cutoff = time.time() - since_days * 86400
     out = []
-    for p in paths:
-        d = PROJECTS / slug_for(p)
-        if not d.is_dir():
+    dirs = [PROJECTS / slug_for(p) for p in paths] + list(extra_dirs)
+    seen = set()
+    for d in dirs:
+        if not d.is_dir() or str(d) in seen:
             continue
+        seen.add(str(d))
         for f in sorted(d.glob("*.jsonl"), key=lambda x: -x.stat().st_mtime):
             if f.stat().st_mtime < cutoff:
                 continue
             try:
-                out.append(read_transcript(f))
+                t = read_transcript(f)
             except Exception as e:
-                out.append({"session_id": f.stem, "file": str(f), "error": str(e),
-                            "mtime": f.stat().st_mtime, "size": f.stat().st_size})
+                t = {"session_id": f.stem, "file": str(f), "error": str(e),
+                     "mtime": f.stat().st_mtime, "size": f.stat().st_size}
+            t["project_dir"] = d.name
+            t["retired_worktree"] = d.name != slug_for(paths[0]) if paths else False
+            out.append(t)
     return out
 
 
@@ -365,13 +480,29 @@ def task_docs(root, globs=("tasks/*.md", "docs/superpowers/plans/*.md")):
 
 
 def main():
-    root = sys.argv[1] if len(sys.argv) > 1 else os.getcwd()
+    argv, since, also = [], 30, []
+    it = iter(sys.argv[1:])
+    for a in it:
+        if a.startswith("--since-days"):
+            since = int(a.split("=", 1)[1]) if "=" in a else int(next(it))
+        elif a == "--no-fetch":
+            continue
+        elif a.startswith("--also-dir"):
+            v = a.split("=", 1)[1] if "=" in a else next(it)
+            also.append(v if not v.startswith("/") else slug_for(v))
+        else:
+            argv.append(a)
+    _unused = 0
+    root = argv[0] if argv else os.getcwd()
     root = sh(["git", "-C", root, "rev-parse", "--show-toplevel"]) or root
 
     g = git_facts(root)
+    cloud = cloud_facts(root, g["main"], fetch="--no-fetch" not in sys.argv)
     wt_paths = [w["path"] for w in g["worktrees"]]
     sessions = live_sessions(wt_paths + [root])
-    tx = transcripts_for(wt_paths)
+    cands = sibling_candidates(root)
+    extra = nested_worktree_dirs(root) + [PROJECTS / n for n in also]
+    tx = transcripts_for(wt_paths, since_days=since, extra_dirs=extra)
     link_sessions_to_transcripts(sessions, tx)
 
     # Attach transcripts to the worktree they ran in.
@@ -390,7 +521,11 @@ def main():
 
     print(json.dumps({
         "generated": datetime.now(timezone.utc).isoformat(),
+        "since_days": since,
+        "included_dirs": [d.name for d in extra],
+        "sibling_candidates": cands,
         "git": g,
+        "cloud": cloud,
         "sessions": sessions,
         "orphan_sessions": orphan,
         "transcripts": tx,

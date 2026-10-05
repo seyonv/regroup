@@ -14,8 +14,11 @@ The short version, in order:
 3. Author `regroup.json`: the reading of that evidence — landing state and session
    state kept as separate axes, the prompt quoted verbatim, tasks and subtasks
    derived from commits and stated success criteria, and one command per card.
-4. `python3 scripts/render.py regroup.json regroup.html`, publish it, look at the
-   screenshot before calling it done.
+4. Save it as `~/.claude/regroup/<repo>/regroup.json` (with a dated copy in
+   `boards/`), start `python3 scripts/serve.py` on it detached, and give the user the
+   localhost link. Give each action its `done` checks so the board updates itself.
+   Look at a screenshot before calling it done. Publish an artifact snapshot only if
+   the user wants a link.
 
 Lead with what needs a decision. Most workstreams need nothing — say so plainly and
 give the user permission to close them.

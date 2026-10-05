@@ -1,7 +1,7 @@
 {
   "name": "regroup",
-  "version": "0.1.0",
-  "description": "Rebuild lost context across branches, worktrees and open Claude Code sessions — one canvas showing what you asked for and whether it landed.",
+  "version": "0.2.0",
+  "description": "Rebuild lost context across branches, worktrees and Claude Code sessions (local and cloud): one live canvas showing what you asked for, whether it landed, and what still needs you.",
   "author": {
     "name": "Seyon Vasantharajan"
   },

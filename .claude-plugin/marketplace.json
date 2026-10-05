@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "Pick up where you left off: every branch, worktree and open Claude session in one canvas.",
-    "version": "0.1.0"
+    "version": "0.2.0"
   },
   "plugins": [
     {
